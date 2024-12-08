@@ -35,14 +35,14 @@ class BasicOperations(FFmpegBase):
         self._run_command(command)
         return output_file
 
-    def trim_media(self, input_file: str, start_time: str, duration: str, output_file: Optional[str] = None) -> str:
+    def trim_media(self, input_file: str, start_time: int, duration: int, output_file: Optional[str] = None) -> str:
         """
         Trim media file to specified duration.
 
         Args:
             input_file (str): Path to input media file
-            start_time (str): Start time in format "HH:MM:SS" or seconds
-            duration (str): Duration in format "HH:MM:SS" or seconds
+            start_time (int): Start time in format "HH:MM:SS" or seconds
+            duration (int): Duration in format "HH:MM:SS" or seconds
             output_file (Optional[str]): Path to output file. If None, will append "_trimmed" to input filename
 
         Returns:
