@@ -59,6 +59,9 @@ class BasicOperations(FFmpegBase):
             name, ext = os.path.splitext(input_file)
             output_file = f"{name}_trimmed{ext}"
         
+        start_time = str(start_time) if isinstance(start_time, int) else start_time
+        duration = str(duration) if isinstance(duration, int) else duration
+
         self.ensure_output_dir(output_file)
         command = self.build_command(
             input_file, 
