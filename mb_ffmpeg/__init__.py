@@ -11,5 +11,4 @@ from .audio_ops import AudioOperations
 from .video_ops import VideoOperations
 from .advanced_ops import AdvancedOperations
 
-__version__ = '0.1.0'
 __all__ = ['FFmpegBase', 'BasicOperations', 'AudioOperations', 'VideoOperations', 'AdvancedOperations']
