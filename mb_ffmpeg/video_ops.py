@@ -44,7 +44,7 @@ class VideoOperations(FFmpegBase):
         return output_file
 
     def add_watermark(self, input_file: str, watermark_file: str, position: str = "center", 
-                     opacity: float = 0.5, output_file: Optional[str] = None) -> str:
+                     opacity: float = 0.5, output_file: Optional[str] = None, postion_value : Optional[str] = None) -> str:
         """
         Add a watermark image to a video.
 
@@ -54,6 +54,7 @@ class VideoOperations(FFmpegBase):
             position (str): Position of watermark ('center', 'top_left', 'top_right', 'bottom_left', 'bottom_right')
             opacity (float): Opacity of watermark (0.0 to 1.0)
             output_file (Optional[str]): Path to output file. If None, appends "_watermark" to input filename
+            postition_value (Optional[str]): Position value of watermark. If None, uses default position. Format: "overlay=x:y"
 
         Returns:
             str: Path to the watermarked video file
@@ -72,7 +73,7 @@ class VideoOperations(FFmpegBase):
         
         self.ensure_output_dir(output_file)
         
-        # Define position coordinates
+        # Define position coordinates if position_value is not provided
         position_map = {
             "center": "overlay=(W-w)/2:(H-h)/2",
             "top_left": "overlay=10:10",
@@ -80,6 +81,10 @@ class VideoOperations(FFmpegBase):
             "bottom_left": "overlay=10:H-h-10",
             "bottom_right": "overlay=W-w-10:H-h-10"
         }
+
+        if postion_value:
+            position = "custom"
+            position_map["custom"] = postion_value
         
         if position not in position_map:
             raise ValueError(f"Invalid position. Must be one of: {', '.join(position_map.keys())}")
