@@ -176,3 +176,20 @@ class BasicOperations(FFmpegBase):
         
         self._run_command(command)
         return output_file
+
+    def video_info(self, input_file: str) -> dict:
+        """
+        Get video information using ffprobe.
+
+        Args:
+            input_file (str): Path to input video file
+
+        Returns:
+            dict: Dictionary containing video information
+
+        Example:
+            >>> basic_ops = BasicOperations()
+            >>> info = basic_ops.video_info("video.mp4")
+            >>> print(info["duration"])
+        """
+        return self.probe_file(input_file)

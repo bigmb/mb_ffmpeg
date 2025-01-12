@@ -66,6 +66,9 @@ resized = basic.change_resolution("input.mp4", (1280, 720))
 
 # Compress video
 compressed = basic.compress_video("input.mp4", crf=23)
+
+# Video info
+info = basic.video_info("input.mp4")
 ```
 
 ### Audio Operations
@@ -131,6 +134,12 @@ gif = video.create_gif(
     duration="5",
     fps=15,
     scale=480
+)
+
+change_aspect = video.change_aspect_ratio(
+    "input.mp4",
+    "9:16",
+    "output.mp4",
 )
 ```
 

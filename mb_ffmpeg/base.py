@@ -105,7 +105,7 @@ class FFmpegBase:
         if output_dir and not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-    def build_command(self, input_file: str, output_file: str, options: List[str]) -> List[str]:
+    def build_command(self, input_file: str, output_file: str, options: List[str],logs=False) -> List[str]:
         """
         Build FFmpeg command with input, output, and options.
 
@@ -119,5 +119,9 @@ class FFmpegBase:
         """
         command = [self.ffmpeg_path, "-i", input_file]
         command.extend(options)
+        if logs:
+            command.append("-hide_banner")
+            command.append("-loglevel")
+            command.append("debug")
         command.append(output_file)
         return command

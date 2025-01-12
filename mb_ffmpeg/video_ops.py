@@ -7,7 +7,8 @@ from typing import Optional, Union, List, Tuple
 
 
 class VideoOperations(FFmpegBase):
-    def crop_video(self, input_file: str, width: int, height: int, x: int, y: int, output_file: Optional[str] = None) -> str:
+    def crop_video(self, input_file: str, width: int, height: int, 
+                   x: Optional[int] = None, y: Optional[int] = None, output_file: Optional[str] = None) -> str:
         """
         Crop a video to specified dimensions from given coordinates.
 
@@ -15,8 +16,8 @@ class VideoOperations(FFmpegBase):
             input_file (str): Path to input video file
             width (int): Width of the crop area
             height (int): Height of the crop area
-            x (int): X coordinate of the top-left corner of crop area
-            y (int): Y coordinate of the top-left corner of crop area
+            x (Optional[int]): X coordinate of the top-left corner of crop area
+            y (Optional[int]): Y coordinate of the top-left corner of crop area
             output_file (Optional[str]): Path to output file. If None, appends "_cropped" to input filename
 
         Returns:
@@ -34,12 +35,20 @@ class VideoOperations(FFmpegBase):
             output_file = f"{name}_cropped{ext}"
         
         self.ensure_output_dir(output_file)
-        command = self.build_command(
-            input_file,
-            output_file,
-            ["-vf", f"crop={width}:{height}:{x}:{y}"]
-        )
-        
+
+        if x and y:
+            command = self.build_command(
+                input_file,
+                output_file,
+                ["-vf", f"crop={width}:{height}:{x}:{y}"]
+            )
+        else:
+            command = self.build_command(
+                input_file,
+                output_file,
+                ["-vf", f"crop=in_h*{width}/{height}:in_h"]
+            )
+
         self._run_command(command)
         return output_file
 
@@ -236,5 +245,43 @@ class VideoOperations(FFmpegBase):
             ["-ss", start_time, "-t", duration, "-vf", filter_str]
         )
         
+        self._run_command(command)
+        return output_file
+
+    def change_aspect_ratio(self, input_file: str, aspect_ratio: str, output_file: Optional[str] = None,logs=False) -> str:
+        """
+        Change the aspect ratio of a video.
+
+        Args:
+            input_file (str): Path to input video file
+            aspect_ratio (str): New aspect ratio (e.g., '0.5625' for 9:16, '1.3333' for 4:3)
+            output_file (Optional[str]): Path to output file. If None, appends "_aspect" to input filename
+
+        Returns:
+            str: Path to the video with changed aspect ratio
+
+        Example:
+            >>> video_ops = VideoOperations()
+            >>> adjusted = video_ops.change_aspect_ratio("input.mp4", "0.5625")
+            >>> print(f"Aspect ratio adjusted video saved as: {adjusted}")
+        """
+        self.validate_input_file(input_file)
+        
+        if output_file is None:
+            name, ext = os.path.splitext(input_file)
+            output_file = f"{name}_aspect{ext}"
+        
+        self.ensure_output_dir(output_file)
+
+        # Build and execute the FFmpeg command
+        command = self.build_command(
+            input_file,
+            output_file,
+            ["-vf", f"setsar={aspect_ratio}"]
+        )
+
+        if logs:
+            command.append(logs)
+
         self._run_command(command)
         return output_file
