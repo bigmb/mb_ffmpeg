@@ -117,7 +117,7 @@ class FFmpegBase:
         Returns:
             List[str]: Complete FFmpeg command as list of strings.
         """
-        command = [self.ffmpeg_path, "-i", input_file]
+        command = [self.ffmpeg_path, "-i", "-y", input_file]
         command.extend(options)
         if logs:
             command.append("-hide_banner")
