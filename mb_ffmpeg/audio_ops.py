@@ -4,7 +4,7 @@ Audio operations module providing specialized audio processing functionality usi
 from .base import FFmpegBase
 import os
 from typing import Optional, Union, List, Tuple
-
+import subprocess
 
 class AudioOperations(FFmpegBase):
     def extract_audio(self, input_file: str, output_format: str = "mp3", output_file: Optional[str] = None) -> str:
@@ -148,6 +148,19 @@ class AudioOperations(FFmpegBase):
         self._run_command(command)
         return output_file
 
+    def get_audio_duration(self, file_path: str) -> float:
+        """Return duration of audio file in seconds."""
+        result = subprocess.run(
+            [self.ffmpeg_path.replace("ffmpeg", "ffprobe"),
+            "-v", "error",
+            "-show_entries", "format=duration",
+            "-of", "default=noprint_wrappers=1:nokey=1",
+            file_path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT
+        )
+        return float(result.stdout.decode().strip())
+
     def mix_audio(self, input_files: List[str], output_file: str, weights: Optional[List[float]] = None) -> str:
         """
         Mix multiple audio files together with optional weight factors.
@@ -171,26 +184,42 @@ class AudioOperations(FFmpegBase):
         """
         for input_file in input_files:
             self.validate_input_file(input_file)
-        
+
         if weights is None:
             weights = [1.0] * len(input_files)
-        
+
         if len(weights) != len(input_files):
             raise ValueError("Number of weights must match number of input files")
-        
+
         self.ensure_output_dir(output_file)
-        
-        # Build complex filter for mixing
+
+        target_duration = self.get_audio_duration(input_files[0])
+
         inputs = []
-        for i in range(len(input_files)):
-            inputs.extend(["-i", input_files[i]])
-        
-        mix_filter = "[0:a]"
-        for i in range(1, len(input_files)):
-            mix_filter += f"[{i}:a]"
-        mix_filter += f"amix=inputs={len(input_files)}:duration=longest"
-        
-        command = [self.ffmpeg_path] + inputs + ["-filter_complex", mix_filter, output_file]
-        
+        filter_parts = []
+
+        for i, (file, weight) in enumerate(zip(input_files, weights)):
+            inputs.extend(["-i", file])
+            if i == 0:
+                # Voice: just trim to own duration (safety)
+                filter_parts.append(f"[{i}:a]atrim=duration={target_duration},volume={weight}[a{i}]")
+            else:
+                # Looping background music to match duration, then trim
+                filter_parts.append(
+                    f"[{i}:a]aloop=loop=-1:size=2e+09,apad,atrim=duration={target_duration},volume={weight}[a{i}]"
+                )
+
+        amix_inputs = ''.join(f"[a{i}]" for i in range(len(input_files)))
+        filter_parts.append(f"{amix_inputs}amix=inputs={len(input_files)}:duration=first[mixed]")
+
+        filter_complex = ';'.join(filter_parts)
+
+        command = [self.ffmpeg_path] + inputs + [
+            "-filter_complex", filter_complex,
+            "-map", "[mixed]",
+            "-y",
+            output_file
+        ]
+
         self._run_command(command)
         return output_file
