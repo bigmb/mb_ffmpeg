@@ -198,15 +198,34 @@ class AudioOperations(FFmpegBase):
         inputs = []
         filter_parts = []
 
+        # for i, (file, weight) in enumerate(zip(input_files, weights)):
+        #     inputs.extend(["-i", file])
+        #     if i == 0:
+        #         # Voice: just trim to own duration (safety)
+        #         filter_parts.append(f"[{i}:a]atrim=duration={target_duration},volume={weight}[a{i}]")
+        #     else:
+        #         # Looping background music to match duration, then trim
+        #         filter_parts.append(
+        #             f"[{i}:a]aloop=loop=-1:size=2e+09,apad,atrim=duration={target_duration},volume={weight}[a{i}]"
+        #         )
+        
         for i, (file, weight) in enumerate(zip(input_files, weights)):
             inputs.extend(["-i", file])
+
             if i == 0:
-                # Voice: just trim to own duration (safety)
+                # Voice track – keep clean
                 filter_parts.append(f"[{i}:a]atrim=duration={target_duration},volume={weight}[a{i}]")
-            else:
-                # Looping background music to match duration, then trim
+            elif i == 1:
+                # Background music – apply beat suppression (lowpass), then mix
                 filter_parts.append(
-                    f"[{i}:a]aloop=loop=-1:size=2e+09,apad,atrim=duration={target_duration},volume={weight}[a{i}]"
+                    f"[{i}:a]aloop=loop=-1:size=2e+09,apad,lowpass=f=300,"
+                    f"atrim=duration={target_duration},volume={weight}[a{i}]"
+                )
+            else:
+                # If more than 2 tracks, treat others normally
+                filter_parts.append(
+                    f"[{i}:a]aloop=loop=-1:size=2e+09,apad,"
+                    f"atrim=duration={target_duration},volume={weight}[a{i}]"
                 )
 
         amix_inputs = ''.join(f"[a{i}]" for i in range(len(input_files)))
