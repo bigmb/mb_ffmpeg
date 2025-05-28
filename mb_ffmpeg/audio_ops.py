@@ -33,7 +33,7 @@ class AudioOperations(FFmpegBase):
         command = self.build_command(
             input_file,
             output_file,
-            ["-vn", "-acodec" ,"libmp3lame" if output_format == "mp3" else "copy"]
+            ["-vn", "-acodec" ,"-y","libmp3lame" if output_format == "mp3" else "copy"]
         )
         
         self._run_command(command)
