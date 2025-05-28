@@ -3,7 +3,7 @@ Video operations module providing specialized video processing functionality usi
 """
 from .base import FFmpegBase
 import os
-from typing import Optional, Union, List, Tuple
+from typing import Optional
 
 
 class VideoOperations(FFmpegBase):
@@ -282,6 +282,42 @@ class VideoOperations(FFmpegBase):
 
         if logs:
             command.append(logs)
+
+        self._run_command(command)
+        return output_file
+
+    def add_audio_to_video(self, video_file: str, audio_file: str, output_file: str) -> str:
+        """
+        Replace the audio of a video file with a new audio track.
+
+        Args:
+            video_file (str): Path to the input video file
+            audio_file (str): Path to the audio file to use
+            output_file (str): Path to save the new video
+
+        Returns:
+            str: Path to the output video file
+
+        Example:
+            >>> video_ops = VideoOperations()
+            >>> final_video = video_ops.add_audio_to_video("input.mp4", "mixed.mp3", "output.mp4")
+            >>> print(f"Final video saved as: {final_video}")
+        """
+        self.validate_input_file(video_file)
+        self.validate_input_file(audio_file)
+        self.ensure_output_dir(output_file)
+
+        command = [
+            self.ffmpeg_path,
+            "-i", video_file,
+            "-i", audio_file,
+            "-c:v", "copy",        # Copy video stream without re-encoding
+            "-map", "0:v:0",       # Map video stream from the first input
+            "-map", "1:a:0",       # Map audio stream from the second input
+            "-shortest",           # Cut output to shortest input length
+            "-y",                  # Overwrite output if exists
+            output_file
+        ]
 
         self._run_command(command)
         return output_file
