@@ -242,7 +242,7 @@ class VideoOperations(FFmpegBase):
         command = self.build_command(
             input_file,
             output_file,
-            ["-ss", start_time, "-t", duration, "-vf", filter_str]
+            ["-y","-ss", start_time, "-t", duration, "-vf", filter_str]
         )
         
         self._run_command(command)
