@@ -205,7 +205,7 @@ class VideoOperations(FFmpegBase):
         return output_file
 
     def create_gif(self, input_file: str, start_time: str, duration: str, 
-                  output_file: Optional[str] = None, fps: int = 10, scale: int = -1) -> str:
+                  output_file: Optional[str] = None, fps: Optional[int] = None, scale: Optional[int] = None) -> str:
         """
         Create an animated GIF from a video segment.
 
@@ -233,16 +233,21 @@ class VideoOperations(FFmpegBase):
         
         self.ensure_output_dir(output_file)
         
-        filters = [f"fps={fps}"]
-        if scale != -1:
+        filters = []
+        if fps is not None:
+            filters.append(f"fps={fps}")
+        if scale is not None:
             filters.append(f"scale={scale}:-1:flags=lanczos")
         
-        filter_str = ",".join(filters)
         
+        command_args = ["-y","-ss", start_time, "-t", duration]
+        if filters:
+            filter_str = ",".join(filters)
+            command_args.extend(["-vf", filter_str])
         command = self.build_command(
             input_file,
             output_file,
-            ["-y","-ss", start_time, "-t", duration, "-vf", filter_str]
+            command_args
         )
         
         self._run_command(command)
