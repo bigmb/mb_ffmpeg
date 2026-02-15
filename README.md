@@ -47,7 +47,7 @@ pip install mb_ffmpeg
 ### Basic Operations
 
 ```python
-from mb_ffmpeg.basic_ops import BasicOperations
+from mb.ffmpeg.basic_ops import BasicOperations
 
 # Initialize basic operations
 basic = BasicOperations()
@@ -74,7 +74,7 @@ info = basic.video_info("input.mp4")
 ### Audio Operations
 
 ```python
-from mb_ffmpeg.audio_ops import AudioOperations
+from mb.ffmpeg.audio_ops import AudioOperations
 
 # Initialize audio operations
 audio = AudioOperations()
@@ -102,7 +102,7 @@ mixed = audio.mix_audio(
 ### Video Operations
 
 ```python
-from mb_ffmpeg.video_ops import VideoOperations
+from mb.ffmpeg.video_ops import VideoOperations
 
 # Initialize video operations
 video = VideoOperations()
@@ -146,7 +146,7 @@ change_aspect = video.change_aspect_ratio(
 ### Advanced Operations
 
 ```python
-from mb_ffmpeg.advanced_ops import AdvancedOperations
+from mb.ffmpeg.advanced_ops import AdvancedOperations
 
 # Initialize advanced operations
 advanced = AdvancedOperations()
